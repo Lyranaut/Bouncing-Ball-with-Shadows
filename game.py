@@ -12,6 +12,8 @@ FPS = 60
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
@@ -34,7 +36,6 @@ goal_right = WIDTH - 20
 # Счетчики для каждого ворота
 score_left = 0
 score_right = 0
-
 
 clock = pygame.time.Clock()
 running = True
@@ -145,11 +146,11 @@ while running:
 
     screen.fill((0, 0, 0))
 
-    pygame.draw.ellipse(screen, RED, ball)
-    pygame.draw.circle(screen, WHITE, (int(player1_pos.x), int(player1_pos.y)), player_radius)
-    pygame.draw.circle(screen, WHITE, (int(player2_pos.x), int(player2_pos.y)), player_radius)
-    pygame.draw.line(screen, WHITE, (goal_left, 0), (goal_left, HEIGHT), 2)
-    pygame.draw.line(screen, WHITE, (goal_right, 0), (goal_right, HEIGHT), 2)
+    pygame.draw.ellipse(screen, YELLOW, ball)
+    pygame.draw.circle(screen, RED, (int(player1_pos.x), int(player1_pos.y)), player_radius)
+    pygame.draw.circle(screen, BLUE, (int(player2_pos.x), int(player2_pos.y)), player_radius)
+    pygame.draw.line(screen, BLUE, (goal_left, 0), (goal_left, HEIGHT), 2)
+    pygame.draw.line(screen, RED, (goal_right, 0), (goal_right, HEIGHT), 2)
     font = pygame.font.Font(None, 36)
     score_display = font.render(f"{score_left} - {score_right}", True, WHITE)
     screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
