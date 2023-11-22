@@ -183,6 +183,12 @@ while running:
             overlap = player_radius + obstacle.width / 2 - player2_pos.distance_to(obstacle.center)
             direction = (obstacle.center - player2_pos).normalize()
             player2_pos -= overlap * direction
+    
+    if player1_pos.distance_to(player2_pos) < 2 * player_radius:
+        overlap = 2 * player_radius - player1_pos.distance_to(player2_pos)
+        direction = (player2_pos - player1_pos).normalize()
+        player1_pos -= overlap / 2 * direction
+        player2_pos += overlap / 2 * direction
 
     ball.x += ball_speed.x
     ball.y += ball_speed.y
