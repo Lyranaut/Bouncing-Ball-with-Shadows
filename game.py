@@ -53,6 +53,10 @@ score_right = 0
 obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), 30, 30)
              for _ in range(5)]
 
+# Добавленные переменные для таймера
+start_time = pygame.time.get_ticks()
+game_duration = 3 * 60 * 1000  # 3 minutes in milliseconds
+
 clock = pygame.time.Clock()
 running = True
 while running:
@@ -95,6 +99,11 @@ while running:
 
     player1_pos += player1_speed
     player2_pos += player2_speed
+
+    # Добавленный код для таймера
+    elapsed_time = pygame.time.get_ticks() - start_time
+    if elapsed_time >= game_duration:
+        running = False
 
     if ball.left < 0:
         ball.x = WIDTH // 2 - ball_size // 2
@@ -228,12 +237,36 @@ while running:
         pygame.draw.rect(screen, WHITE, obstacle)
 
     font = pygame.font.Font(None, 36)
+    # Добавленный код для отображения таймера
+    remaining_minutes = (game_duration - elapsed_time) // 1000 // 60
+    remaining_seconds = (game_duration - elapsed_time) // 1000 % 60
+    timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, WHITE)
+    # Рисуем таймер слева от счета
+    screen.blit(timer_display, (WIDTH // 4 - timer_display.get_width() // 2, 20))
+    # Рисуем счет
     score_display = font.render(f"{score_left} - {score_right}", True, WHITE)
     screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
 
     pygame.display.flip()
 
     clock.tick(FPS)
+
+# По окончании таймера выводим сообщение о победителе
+if score_left < score_right:
+    winner_message = "Red Won!"
+elif score_left > score_right:
+    winner_message = "Blue Won!"
+else:
+    winner_message = "It's a Tie!"
+
+# Отображаем сообщение о победителе на чёрном фоне
+screen.fill((0, 0, 0))
+winner_display = font.render(winner_message, True, WHITE)
+screen.blit(winner_display, (WIDTH // 2 - winner_display.get_width() // 2, HEIGHT // 2 - winner_display.get_height() // 2))
+pygame.display.flip()
+
+# Ждем некоторое время перед завершением программы
+pygame.time.wait(5000)
 
 pygame.quit()
 sys.exit()
