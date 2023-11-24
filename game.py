@@ -101,7 +101,7 @@ def main_menu():
 
 
         for i, option in enumerate(menu_options):
-            color = WHITE if i == selected_option else (200, 200, 200)
+            color = YELLOW if i == selected_option else (200, 200, 200)
             text = menu_font.render(option, True, color)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(menu_options) * 25 + i * 50))
 
@@ -189,7 +189,7 @@ def game_menu():
                         sys.exit()
 
         for i, option in enumerate(game_menu_options):
-            color = WHITE if i == selected_option else (200, 200, 200)
+            color = YELLOW if i == selected_option else (200, 200, 200)
             text = menu_font.render(option, True, color)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(game_menu_options) * 25 + i * 50))
 
@@ -223,6 +223,14 @@ def options_menu():
                         pygame.display.set_caption("2D Football Game")
                     elif selected_option == 2:  # Apply Changes
                         return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Левая кнопка мыши
+                    # Проверяем, была ли нажата левая кнопка мыши в области чекбокса
+                    checkbox_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 20, 20)
+                    if checkbox_rect.collidepoint(event.pos):
+                        fullscreen_checkbox = not fullscreen_checkbox
+                        pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_checkbox else 0)
+                        pygame.display.set_caption("2D Football Game")
 
         # Отображение чекбокса для переключения между полноэкранным и оконным режимами
         checkbox_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 20, 20)
