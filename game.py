@@ -3,6 +3,8 @@ from pygame.locals import *
 import sys
 import random
 import os
+import settings
+
 
 #загрузка звуков
 sound_folder = os.path.join(os.path.dirname(__file__), 'sound')
@@ -68,8 +70,8 @@ game_duration = 3 * 60 * 1000  # 3 minutes
 show_menu = False
 show_game_menu = False
 menu_font = pygame.font.Font(None, 50)
-menu_options = ["Start", "Exit"]
-game_menu_options = ["Resume", "New Game", "Main Menu", "Exit"]
+menu_options = ["Start", "Options", "Exit"]
+game_menu_options = ["Resume", "New Game", "Options", "Main Menu", "Exit"]
 selected_option = 0  # Индекс выбранной опции в меню
 
 def main_menu():
@@ -91,9 +93,12 @@ def main_menu():
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:  # Start
                         return
-                    elif selected_option == 1:  # Exit
+                    elif selected_option == 1:  # Options
+                        options_menu()
+                    elif selected_option == 2:  # Exit
                         pygame.quit()
                         sys.exit()
+
 
         for i, option in enumerate(menu_options):
             color = WHITE if i == selected_option else (200, 200, 200)
@@ -172,13 +177,14 @@ def game_menu():
                     if selected_option == 0:  # Resume
                         show_game_menu = False
                     elif selected_option == 1:  # New Game
-                        # Reset game variables and start a new game
                         reset_game()
                         show_game_menu = False
-                    elif selected_option == 2:  # Main Menu
+                    elif selected_option == 2:  # Options
+                        options_menu()
+                    elif selected_option == 3:  # Main Menu
                         return_to_main_menu()
                         show_menu = True
-                    elif selected_option == 3:  # Exit
+                    elif selected_option == 4:  # Exit
                         pygame.quit()
                         sys.exit()
 
@@ -188,6 +194,55 @@ def game_menu():
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(game_menu_options) * 25 + i * 50))
 
         pygame.display.flip()
+
+def options_menu():
+    global selected_option
+    global show_menu
+
+    fullscreen_checkbox = False  # Переменная для отслеживания состояния чекбокса
+
+    while True:
+        screen.fill((0, 0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % 3
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % 3
+                elif event.key == pygame.K_RETURN:
+                    if selected_option == 0:  # Back
+                        show_menu = True  # Set show_menu to True when "Back" is selected
+                        return
+                    elif selected_option == 1:  # Fullscreen
+                        fullscreen_checkbox = not fullscreen_checkbox
+                        pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_checkbox else 0)
+                        pygame.display.set_caption("2D Football Game")
+                    elif selected_option == 2:  # Apply Changes
+                        return
+
+        # Отображение чекбокса для переключения между полноэкранным и оконным режимами
+        checkbox_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 20, 20)
+        pygame.draw.rect(screen, WHITE, checkbox_rect, 2)
+        if fullscreen_checkbox:
+            pygame.draw.line(screen, WHITE, (checkbox_rect.left + 5, checkbox_rect.centery),
+                             (checkbox_rect.centerx, checkbox_rect.bottom - 5), 2)
+            pygame.draw.line(screen, WHITE, (checkbox_rect.centerx, checkbox_rect.bottom - 5),
+                             (checkbox_rect.right - 5, checkbox_rect.top + 5), 2)
+        font = pygame.font.Font(None, 36)
+        text = font.render("Fullscreen", True, WHITE)
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2 + 30, HEIGHT // 2 - 25))
+
+        # Добавленная опция "назад"
+        back_text = font.render("Back", True, WHITE)
+        screen.blit(back_text, (WIDTH // 2 - back_text.get_width() // 2, HEIGHT - 100))
+
+        pygame.display.flip()
+
+
 
 while True:
     pygame.mixer.music.play(loops=-1)
