@@ -72,7 +72,7 @@ show_game_menu = False
 menu_font = pygame.font.Font(None, 50)
 menu_options = ["Start", "Options", "Exit"]
 game_menu_options = ["Resume", "New Game", "Options", "Main Menu", "Exit"]
-resolution_options = ["800x600", "1024x768", "1280x720", "1920x1080"]  # Добавленные опции разрешения
+resolution_options = ["800x600", "1024x768", "1280x720", "1920x1080"] 
 selected_resolution = 0  # Индекс выбранного разрешения
 selected_option = 0  # Индекс выбранной опции в меню
 
