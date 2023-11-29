@@ -1,7 +1,7 @@
 # Bouncing-Ball-with-Shadows-Alfa
 
 Brief Game Synopsis:
-"Bouncing Ball with Shadows" is an arcade-style game reminiscent of ping-pong. In this game, two players control paddles, attempting to bounce the ball back and forth while aiming to score goals against each other. The game features a bouncing ball and offers a competitive two-player experience.
+"Bouncing Ball with Shadows" - is an arcade-style game reminiscent of ping-pong. In this game, two players control paddles, attempting to bounce the ball back and forth while aiming to score goals against each other. The game features a bouncing ball and offers a competitive two-player experience.
 
 
 Control Guide:
