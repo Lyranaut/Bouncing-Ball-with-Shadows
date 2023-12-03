@@ -4,6 +4,7 @@ import sys
 import random
 import os
 import settings
+from sound_manager import play_goal_sound, play_hit_sound, play_bounce_sound, play_background_music
 
 
 #загрузка звуков
@@ -26,16 +27,6 @@ YELLOW = (255, 255, 0)
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("2D Football Game")
-
-#подключение звуков
-goal_sound = pygame.mixer.Sound(os.path.join(sound_folder, "mixkit-winning-a-coin-video-game-2069.wav"))
-hit_sound = pygame.mixer.Sound(os.path.join(sound_folder, "lovi-myach.wav"))
-bounce_sound = pygame.mixer.Sound(os.path.join(sound_folder, "otskok-myacha.wav"))
-pygame.mixer.music.load(os.path.join(sound_folder, "main-menu-1.wav"))
-pygame.mixer.music.set_volume(0.5)
-bounce_sound.set_volume(0.5)
-hit_sound.set_volume(0.5)
-goal_sound.set_volume(0.5)
 
 #настройка формы и размеров мяча
 ball_size = 20
@@ -306,7 +297,7 @@ while True:
             player2_speed.x = 0
 
         if show_game_menu:
-            pygame.mixer.music.play(loops=-1)
+            play_background_music()
             game_menu()
         else:
             pygame.mixer.music.stop()
@@ -327,14 +318,14 @@ while True:
             score_right += 1
             ball_speed = initial_ball_speed.copy()
             # Воспроизведение звука при забитии гола
-            goal_sound.play()
+            play_goal_sound()
         elif ball.right > WIDTH:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_left += 1
             ball_speed = initial_ball_speed.copy()
             # Воспроизведение звука при забитии гола
-            goal_sound.play()
+            play_goal_sound()
 
         if ball.left < goal_left:
             ball.x = WIDTH // 2 - ball_size // 2
@@ -342,14 +333,14 @@ while True:
             score_right += 1
             ball_speed = initial_ball_speed.copy()
             # Воспроизведение звука при забитии гола
-            goal_sound.play()
+            play_goal_sound()
         elif ball.right > goal_right:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_left += 1
             ball_speed = initial_ball_speed.copy()
             # Воспроизведение звука при забитии гола
-            goal_sound.play()
+            play_goal_sound()
 
         # Глухие стены экрана
         if player1_pos.x > WIDTH - player_radius:
@@ -381,7 +372,7 @@ while True:
             ball_speed -= 2 * relative_speed.dot(relative_direction) * relative_direction
 
             # Воспроизведение звука при отбитии мяча игроком
-            hit_sound.play()
+            play_hit_sound()
 
         if pygame.Rect(player2_pos.x - player_radius, player2_pos.y - player_radius, player_radius * 2,
                     player_radius * 2).colliderect(ball):
@@ -391,7 +382,7 @@ while True:
             ball_speed -= 2 * relative_speed.dot(relative_direction) * relative_direction
 
             # Воспроизведение звука при отбитии мяча игроком
-            hit_sound.play()
+            play_hit_sound()
 
         # Обработка столкновения игроков с преградами
         for obstacle in obstacles:
@@ -422,11 +413,11 @@ while True:
         # Отскок мяча от стен
         if ball.left <= 0 or ball.right >= WIDTH:
             ball_speed.x = -ball_speed.x
-            bounce_sound.play()
+            play_bounce_sound()
 
         if ball.top <= 0 or ball.bottom >= HEIGHT:
             ball_speed.y = -ball_speed.y
-            bounce_sound.play()
+            play_bounce_sound()
 
         # Обработка столкновения мяча с преградами
         for obstacle in obstacles:
@@ -439,7 +430,7 @@ while True:
                 else:
                     ball_speed.x = -ball_speed.x
                     ball.x += 2 * (intersection.width * (ball_speed.x > 0) - intersection.width * (ball_speed.x < 0))
-                bounce_sound.play()
+                play_bounce_sound()
 
         #отрисовка графики
         screen.fill((0, 0, 0))
