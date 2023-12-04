@@ -3,7 +3,6 @@ from pygame.locals import *
 import sys
 import random
 import os
-import settings
 from sound_manager import play_goal_sound, play_hit_sound, play_bounce_sound, play_background_music
 
 #загрузка звуков
@@ -22,6 +21,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
 
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
@@ -63,7 +63,7 @@ show_game_menu = False
 menu_font = pygame.font.Font(None, 50)
 menu_options = ["Start", "Options", "Exit"]
 game_menu_options = ["Resume", "New Game", "Options", "Main Menu", "Exit"]
-resolution_options = ["800x600", "1024x768", "1280x720", "1920x1080"] 
+resolution_options = ["800x600", "720x480", "640x480", "1280x800", "1280x720", "1024x768", "1920x1080"] 
 selected_resolution = 0  # Индекс выбранного разрешения
 selected_option = 0  # Индекс выбранной опции в меню
 
@@ -193,9 +193,8 @@ def options_menu():
     global show_menu
     global screen
     global WIDTH, HEIGHT
-    global selected_resolution
 
-    fullscreen_checkbox = False
+    fullscreen_toggle = False
 
     while True:
         screen.fill((0, 0, 0))
@@ -206,13 +205,9 @@ def options_menu():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 3
+                    selected_option = (selected_option - 1) % 2
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 3
-                elif event.key == pygame.K_LEFT:  
-                    selected_resolution = (selected_resolution - 1) % len(resolution_options)
-                elif event.key == pygame.K_RIGHT:
-                    selected_resolution = (selected_resolution + 1) % len(resolution_options)
+                    selected_option = (selected_option + 1) % 2
                 elif event.key == pygame.K_ESCAPE:
                     show_menu = True
                     return
@@ -220,33 +215,24 @@ def options_menu():
                     if selected_option == 0:  # Back
                         show_menu = True
                         return
-                    elif selected_option == 1:  # Apply Changes
-                        resolution = resolution_options[selected_resolution].split('x')
-                        WIDTH, HEIGHT = int(resolution[0]), int(resolution[1])
-                        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_checkbox else 0)
-                        pygame.display.set_caption("2D Football Game")
-                        return
-                    elif selected_option == 2:  # Fullscreen
-                        fullscreen_checkbox = not fullscreen_checkbox
-                        pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_checkbox else 0)
+                    elif selected_option == 1:  # Toggle Fullscreen
+                        fullscreen_toggle = not fullscreen_toggle
+                        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_toggle else 0)
                         pygame.display.set_caption("2D Football Game")
 
-        for i, option in enumerate(resolution_options):
-            color = YELLOW if i == selected_resolution else (200, 200, 200)
-            text = menu_font.render(option, True, color)
-            screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(resolution_options) * 25 + i * 50))
-
-        # Отображение чекбокса после выбора качества
-        checkbox_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + len(resolution_options) * 50, 20, 20)
-        pygame.draw.rect(screen, WHITE, checkbox_rect, 2)
-        if fullscreen_checkbox:
-            pygame.draw.line(screen, WHITE, (checkbox_rect.left + 5, checkbox_rect.centery),
-                            (checkbox_rect.centerx, checkbox_rect.bottom - 5), 2)
-            pygame.draw.line(screen, WHITE, (checkbox_rect.centerx, checkbox_rect.bottom - 5),
-                            (checkbox_rect.right - 5, checkbox_rect.top + 5), 2)
         font = pygame.font.Font(None, 36)
-        text = font.render("Fullscreen", True, WHITE)
-        screen.blit(text, (WIDTH // 2 - text.get_width() // 2 + 30, HEIGHT // 2 + len(resolution_options) * 50 - 25))
+
+        # Render and display the fullscreen toggle switch
+        toggle_text = font.render("Fullscreen", True, WHITE)
+        toggle_rect = toggle_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+        pygame.draw.rect(screen, WHITE, toggle_rect, 2)
+
+        if fullscreen_toggle:
+            pygame.draw.rect(screen, GREEN, (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+        else:
+            pygame.draw.rect(screen, RED, (toggle_rect.left, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+
+        screen.blit(toggle_text, toggle_rect.topleft)
 
         pygame.display.flip()
 
