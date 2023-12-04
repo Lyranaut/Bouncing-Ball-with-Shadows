@@ -6,7 +6,6 @@ import os
 import settings
 from sound_manager import play_goal_sound, play_hit_sound, play_bounce_sound, play_background_music
 
-
 #загрузка звуков
 sound_folder = os.path.join(os.path.dirname(__file__), 'sound')
 
@@ -27,6 +26,7 @@ YELLOW = (255, 255, 0)
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("2D Football Game")
+
 
 #настройка формы и размеров мяча
 ball_size = 20
@@ -232,7 +232,7 @@ def options_menu():
                         pygame.display.set_caption("2D Football Game")
 
         for i, option in enumerate(resolution_options):
-            color = WHITE if i == selected_resolution else (200, 200, 200)
+            color = YELLOW if i == selected_resolution else (200, 200, 200)
             text = menu_font.render(option, True, color)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(resolution_options) * 25 + i * 50))
 
@@ -297,7 +297,7 @@ while True:
             player2_speed.x = 0
 
         if show_game_menu:
-            play_background_music()
+            pygame.mixer.music.play(loops=-1)
             game_menu()
         else:
             pygame.mixer.music.stop()
@@ -326,7 +326,6 @@ while True:
             ball_speed = initial_ball_speed.copy()
             # Воспроизведение звука при забитии гола
             play_goal_sound()
-
         if ball.left < goal_left:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
