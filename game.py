@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 from pygame.locals import *
 import sys
 import random
@@ -26,7 +27,6 @@ GREEN = (0, 255, 0)
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("2D Football Game")
-
 
 #настройка формы и размеров мяча
 ball_size = 20
@@ -66,6 +66,8 @@ game_menu_options = ["Resume", "New Game", "Options", "Main Menu", "Exit"]
 resolution_options = ["800x600", "720x480", "640x480", "1280x800", "1280x720", "1024x768", "1920x1080"] 
 selected_resolution = 0  # Индекс выбранного разрешения
 selected_option = 0  # Индекс выбранной опции в меню
+ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
+volume = 0.5
 
 def main_menu():
     global selected_option  # Добавленная строка
@@ -188,13 +190,28 @@ def game_menu():
 
         pygame.display.flip()
 
+def create_volume_slider():
+    volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
+    volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, 0.5, (0.0, 1.0), manager=ui_manager)
+    return volume_slider
+
+volume_slider = create_volume_slider()
+
 def options_menu():
     global selected_option
     global show_menu
     global screen
     global WIDTH, HEIGHT
+    global volume
 
     fullscreen_toggle = False
+
+    # Pygame GUI initialization
+    ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
+
+    # Create volume slider
+    volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
+    volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, volume, (0.0, 1.0), manager=ui_manager)
 
     while True:
         screen.fill((0, 0, 0))
@@ -205,9 +222,9 @@ def options_menu():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 2
+                    selected_option = (selected_option - 1) % 3
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 2
+                    selected_option = (selected_option + 1) % 3
                 elif event.key == pygame.K_ESCAPE:
                     show_menu = True
                     return
@@ -219,20 +236,46 @@ def options_menu():
                         fullscreen_toggle = not fullscreen_toggle
                         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_toggle else 0)
                         pygame.display.set_caption("2D Football Game")
+                    elif selected_option == 2:  # Set Volume
+                        # Set volume based on the slider value
+                        pygame.mixer.music.set_volume(volume_slider.get_current_value())
+                        show_menu = True
+                        return
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
+                    if event.ui_element == volume_slider:
+                        # Update the volume value
+                        volume = volume_slider.get_current_value()
+
+            # Update the UI manager with the current event
+            ui_manager.process_events(event)
+
+        # Update the UI manager
+        ui_manager.update(pygame.time.get_ticks() / 1000.0)
+
+        # Draw GUI elements
+        ui_manager.draw_ui(screen)
+
+        pygame.mixer.music.set_volume(volume)
 
         font = pygame.font.Font(None, 36)
 
         # Render and display the fullscreen toggle switch
-        toggle_text = font.render("Fullscreen", True, WHITE)
+        toggle_text = font.render("Fullscreen", True, (255, 255, 255))
         toggle_rect = toggle_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
-        pygame.draw.rect(screen, WHITE, toggle_rect, 2)
+        pygame.draw.rect(screen, (255, 255, 255), toggle_rect, 2)
 
         if fullscreen_toggle:
-            pygame.draw.rect(screen, GREEN, (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+            pygame.draw.rect(screen, (0, 255, 0), (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
         else:
-            pygame.draw.rect(screen, RED, (toggle_rect.left, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+            pygame.draw.rect(screen, (255, 0, 0), (toggle_rect.left, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
 
         screen.blit(toggle_text, toggle_rect.topleft)
+
+        # Render and display the volume label
+        volume_label = font.render("-  Music Volume  +", True, (255, 255, 255))
+        volume_label_rect = volume_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
+        screen.blit(volume_label, volume_label_rect.topleft)
 
         pygame.display.flip()
 
