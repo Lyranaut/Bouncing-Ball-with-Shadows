@@ -234,7 +234,13 @@ def options_menu():
                         return
                     elif selected_option == 1:  # Toggle Fullscreen
                         fullscreen_toggle = not fullscreen_toggle
-                        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN if fullscreen_toggle else 0)
+                        if fullscreen_toggle:
+                            # Переключение в полноэкранный режим
+                            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+                        else:
+                            # Переключение в оконный режим с новыми размерами окна
+                            windowed_width, windowed_height = 800, 600  # Новые размеры окна
+                            screen = pygame.display.set_mode((windowed_width, windowed_height))
                         pygame.display.set_caption("2D Football Game")
                     elif selected_option == 2:  # Set Volume
                         # Set volume based on the slider value
@@ -486,7 +492,7 @@ while True:
         remaining_seconds = (game_duration - elapsed_time) // 1000 % 60
         timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, WHITE)
         # Рисуем таймер слева от счета
-        screen.blit(timer_display, (WIDTH // 4 - timer_display.get_width() // 2, 20))
+        screen.blit(timer_display, (WIDTH // 2.5 - timer_display.get_width() // 2, 20))
         # Рисуем счет
         score_display = font.render(f"{score_left} - {score_right}", True, WHITE)
         screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
