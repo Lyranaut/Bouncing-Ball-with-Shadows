@@ -23,6 +23,8 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
+VIOLET = (238, 130, 238)
+Colores = [WHITE, RED, BLUE, YELLOW, GREEN, VIOLET]
 
 # Инициализация Pygame с окном без границ
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
@@ -49,9 +51,9 @@ goal_right = WIDTH - 20
 score_left = 0
 score_right = 0
 
-# Генерация случайных преград (красных квадратов)
-obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), 30, 30)
-             for _ in range(5)]
+# Генерация случайных преград
+obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), random.randint(20, 50), random.randint(20, 50))
+             for _ in range(random.randint(1, 5))]
 
 # Добавленные переменные для таймера
 start_time = pygame.time.get_ticks()
@@ -69,8 +71,9 @@ selected_option = 0  # Индекс выбранной опции в меню
 ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
 volume = 0.5
 
+#Главное меню
 def main_menu():
-    global selected_option  # Добавленная строка
+    global selected_option
     global show_menu
 
     while True:
@@ -102,6 +105,7 @@ def main_menu():
 
         pygame.display.flip()
 
+#Перезагрузка при New Game
 def reset_game():
     global ball
     global ball_speed
@@ -131,13 +135,13 @@ def reset_game():
 
     # Regenerate obstacles
     obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), 30, 30)
-                 for _ in range(5)]
+                 for _ in range(random.randint(0, 5))]
 
     # Reset the game timer
     start_time = pygame.time.get_ticks()
 
 
-
+#Функция главного меню
 def return_to_main_menu():
     global show_game_menu
     global selected_option
@@ -150,7 +154,7 @@ def return_to_main_menu():
 
 
 
-# Остальной код без изменений
+# Меню во время игры(ESC)
 def game_menu():
     global show_game_menu
     global selected_option
@@ -190,6 +194,7 @@ def game_menu():
 
         pygame.display.flip()
 
+#звуковой слайдер(отключено)
 def create_volume_slider():
     volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
     volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, 0.5, (0.0, 1.0), manager=ui_manager)
@@ -197,6 +202,7 @@ def create_volume_slider():
 
 volume_slider = create_volume_slider()
 
+#меню опций
 def options_menu():
     global selected_option
     global show_menu
@@ -205,13 +211,14 @@ def options_menu():
     global volume
 
     fullscreen_toggle = False
+    volume_toggle = False
 
     # Pygame GUI initialization
     ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
 
     # Create volume slider
-    volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
-    volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, volume, (0.0, 1.0), manager=ui_manager)
+                    #volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
+                    #volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, volume, (0.0, 1.0), manager=ui_manager)
 
     while True:
         screen.fill((0, 0, 0))
@@ -221,40 +228,88 @@ def options_menu():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 3
-                elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 3
-                elif event.key == pygame.K_ESCAPE:
-                    show_menu = True
-                    return
-                elif event.key == pygame.K_RETURN:
-                    if selected_option == 0:  # Back
+                    if event.key == pygame.K_UP:
+                        selected_option = (selected_option - 1) % 3
+                    elif event.key == pygame.K_DOWN:
+                        selected_option = (selected_option + 1) % 3
+                    elif event.key == pygame.K_ESCAPE:
                         show_menu = True
                         return
-                    elif selected_option == 1:  # Toggle Fullscreen
+                    elif event.key == pygame.K_RETURN:
+                        if selected_option == 0:  # Back
+                            show_menu = True
+                            return
+                        elif selected_option == 1:  # Toggle Fullscreen
+                            fullscreen_toggle = not fullscreen_toggle
+                            if fullscreen_toggle:
+                                # Переключение в полноэкранный режим
+                                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+                            else:
+                                # Переключение в оконный режим с новыми размерами окна
+                                windowed_width, windowed_height = 1000, 800  # Новые размеры окна
+                                screen = pygame.display.set_mode((windowed_width, windowed_height))
+                            pygame.display.set_caption("2D Football Game")
+                        elif selected_option == 2:  # Set Volume
+                            # Set volume based on the slider value
+                            volume_toggle = not volume_toggle
+                            if volume_toggle:
+                                volume = 0
+                            else:
+                                volume = 0.5
+                            return
+                    elif event.key == pygame.K_m:
+                        volume_toggle = not volume_toggle
+                        if volume_toggle:
+                            volume = 0
+                        else:
+                            volume = 0.5
+                    elif event.key == pygame.K_f:
                         fullscreen_toggle = not fullscreen_toggle
                         if fullscreen_toggle:
                             # Переключение в полноэкранный режим
-                            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+                            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
                         else:
                             # Переключение в оконный режим с новыми размерами окна
-                            windowed_width, windowed_height = 800, 600  # Новые размеры окна
+                            windowed_width, windowed_height = 900, 700  # Новые размеры окна
                             screen = pygame.display.set_mode((windowed_width, windowed_height))
-                        pygame.display.set_caption("2D Football Game")
-                    elif selected_option == 2:  # Set Volume
-                        # Set volume based on the slider value
-                        pygame.mixer.music.set_volume(volume_slider.get_current_value())
-                        show_menu = True
-                        return
-            elif event.type == pygame.USEREVENT:
-                if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
-                    if event.ui_element == volume_slider:
-                        # Update the volume value
-                        volume = volume_slider.get_current_value()
+                            
+                             # Масштабирование игровых объектов и преград
+                            ball.x = windowed_width // 2 - ball_size // 2
+                            ball.y = windowed_height // 2 - ball_size // 2
 
-            # Update the UI manager with the current event
-            ui_manager.process_events(event)
+                            player1_pos.x = windowed_width - 30
+                            player2_pos.x = 30
+                            
+                            for obstacle in obstacles:
+                                obstacle.x = random.randint(windowed_width // 3, 2 * windowed_width // 3 - 30)
+                                obstacle.y = random.randint(0, windowed_height - 30)
+
+                        pygame.display.set_caption("2D Football Game")
+
+            elif event.type == pygame.VIDEORESIZE:
+                # Получение новых размеров окна
+                WIDTH, HEIGHT = event.size
+                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                
+                # Масштабирование игровых объектов и преград
+                ball.x = WIDTH // 2 - ball_size // 2
+                ball.y = HEIGHT // 2 - ball_size // 2
+
+                player1_pos.x = WIDTH - 30
+                player2_pos.x = 30
+                
+                for obstacle in obstacles:
+                    obstacle.x = random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30)
+                    obstacle.y = random.randint(0, HEIGHT - 30)
+
+                # Обновляем положение ворот внутри экрана
+                goal_left = max(10, WIDTH // 3)
+                goal_right = min(2 * WIDTH // 3 - 30, WIDTH - 20)
+
+                pygame.draw.line(screen, RED, (goal_right, 0), (goal_right, HEIGHT), 2)
+
+                # Update the UI manager with the current event
+                ui_manager.process_events(event)
 
         # Update the UI manager
         ui_manager.update(pygame.time.get_ticks() / 1000.0)
@@ -268,8 +323,11 @@ def options_menu():
 
         # Render and display the fullscreen toggle switch
         toggle_text = font.render("Fullscreen", True, (255, 255, 255))
-        toggle_rect = toggle_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+        toggle_text1 = font.render("Volume", True, (255, 255, 255))
+        toggle_rect = toggle_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 35))
+        toggle_rect1 = toggle_text1.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 35))
         pygame.draw.rect(screen, (255, 255, 255), toggle_rect, 2)
+        pygame.draw.rect(screen, (255, 255, 255), toggle_rect1, 2)
 
         if fullscreen_toggle:
             pygame.draw.rect(screen, (0, 255, 0), (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
@@ -278,13 +336,20 @@ def options_menu():
 
         screen.blit(toggle_text, toggle_rect.topleft)
 
+        if volume_toggle:
+            pygame.draw.rect(screen, (255, 0, 0), (toggle_rect1.centerx, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
+        else:
+            pygame.draw.rect(screen, (0, 255, 0), (toggle_rect1.left, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
+
+        screen.blit(toggle_text1, toggle_rect1.topleft)
         # Render and display the volume label
-        volume_label = font.render("-  Music Volume  +", True, (255, 255, 255))
-        volume_label_rect = volume_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
-        screen.blit(volume_label, volume_label_rect.topleft)
+        #volume_label = font.render("-  Music Volume  +", True, (255, 255, 255))
+        #volume_label_rect = volume_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
+        #screen.blit(volume_label, volume_label_rect.topleft)
 
         pygame.display.flip()
 
+#Оснновной игровой цикл
 while True:
     pygame.mixer.music.play(loops=-1)
     main_menu()
@@ -304,30 +369,30 @@ while True:
         keys = pygame.key.get_pressed()
 
         if keys[K_UP]:
-            player1_speed.y = -5
+            player1_speed.y = -8
         elif keys[K_DOWN]:
-            player1_speed.y = 5
+            player1_speed.y = 8
         else:
             player1_speed.y = 0
 
         if keys[K_LEFT]:
-            player1_speed.x = -5
+            player1_speed.x = -8
         elif keys[K_RIGHT]:
-            player1_speed.x = 5
+            player1_speed.x = 8
         else:
             player1_speed.x = 0
 
         if keys[K_w]:
-            player2_speed.y = -5
+            player2_speed.y = -8
         elif keys[K_s]:
-            player2_speed.y = 5
+            player2_speed.y = 8
         else:
             player2_speed.y = 0
 
         if keys[K_a]:
-            player2_speed.x = -5
+            player2_speed.x = -8
         elif keys[K_d]:
-            player2_speed.x = 5
+            player2_speed.x = 8
         else:
             player2_speed.x = 0
 
@@ -403,7 +468,7 @@ while True:
             # Изменение направления и скорости мяча в зависимости от столкновения с игроком
             relative_speed = ball_speed - player1_speed
             relative_direction = pygame.Vector2(player1_pos - ball.center).normalize()
-            ball_speed -= 2 * relative_speed.dot(relative_direction) * relative_direction
+            ball_speed -= 1.75 * relative_speed.dot(relative_direction) * relative_direction
 
             # Воспроизведение звука при отбитии мяча игроком
             play_hit_sound()
@@ -413,7 +478,7 @@ while True:
             # Изменение направления и скорости мяча в зависимости от столкновения с игроком
             relative_speed = ball_speed - player2_speed
             relative_direction = pygame.Vector2(player2_pos - ball.center).normalize()
-            ball_speed -= 2 * relative_speed.dot(relative_direction) * relative_direction
+            ball_speed -= 1.75 * relative_speed.dot(relative_direction) * relative_direction
 
             # Воспроизведение звука при отбитии мяча игроком
             play_hit_sound()
@@ -477,7 +542,7 @@ while True:
 
         # Отрисовка преград
         for obstacle in obstacles:
-            pygame.draw.rect(screen, WHITE, obstacle)
+            pygame.draw.rect(screen, VIOLET, obstacle)
 
         font = pygame.font.Font(None, 36)
         # Добавленный код для отображения таймера
@@ -490,11 +555,11 @@ while True:
 
         remaining_minutes = (game_duration - elapsed_time) // 1000 // 60
         remaining_seconds = (game_duration - elapsed_time) // 1000 % 60
-        timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, WHITE)
+        timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, GREEN)
         # Рисуем таймер слева от счета
-        screen.blit(timer_display, (WIDTH // 2.5 - timer_display.get_width() // 2, 20))
+        screen.blit(timer_display, (WIDTH // 2.2 - timer_display.get_width() // 2, 20))
         # Рисуем счет
-        score_display = font.render(f"{score_left} - {score_right}", True, WHITE)
+        score_display = font.render(f"           | {score_left}  -  {score_right} | ", True, WHITE)
         screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
 
         pygame.display.flip()
@@ -516,7 +581,7 @@ while True:
     pygame.display.flip()
 
     # Ждем некоторое время перед завершением программы
-    pygame.time.wait(5000)
+    pygame.time.wait(1000)
 
     pygame.quit()
     sys.exit()
