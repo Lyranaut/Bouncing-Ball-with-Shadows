@@ -4,80 +4,27 @@ from pygame.locals import *
 import sys
 import random
 import os
-from sound_manager import play_goal_sound, play_hit_sound, play_bounce_sound, play_background_music
+from sound_manager import *
+from Graphics import *
 
-#загрузка звуков
+#Add music to the game | Добавляем музыку в игру
 sound_folder = os.path.join(os.path.dirname(__file__), 'sound')
 
 pygame.init()
 
-# Получение размеров экрана
+#Geting Screen Size | Получение размеров экрана
 info = pygame.display.Info()
-WIDTH, HEIGHT = info.current_w, info.current_h
-
-FPS = 60
-
-#Цвета
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-GREEN = (0, 255, 0)
-VIOLET = (238, 130, 238)
-Colores = [WHITE, RED, BLUE, YELLOW, GREEN, VIOLET]
-
-# Инициализация Pygame с окном без границ
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("2D Football Game")
 
-#настройка формы и размеров мяча
-ball_size = 20
-ball = pygame.Rect(WIDTH // 2 - ball_size // 2, HEIGHT // 2 - ball_size // 2, ball_size, ball_size)
-initial_ball_speed = pygame.Vector2(3, 2)
-ball_speed = initial_ball_speed.copy()
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Main Menu | Главное меню
 
-#настройка формы и размеров игроков
-player_radius = 20
-player1_pos = pygame.Vector2(WIDTH - 30, HEIGHT // 2)
-player2_pos = pygame.Vector2(30, HEIGHT // 2)
-player1_speed = pygame.Vector2(0, 0)
-player2_speed = pygame.Vector2(0, 0)
-
-# Ворота
-goal_left = 10
-goal_right = WIDTH - 20
-
-# Счетчики для каждого ворота
-score_left = 0
-score_right = 0
-
-# Генерация случайных преград
-obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), random.randint(20, 50), random.randint(20, 50))
-             for _ in range(random.randint(1, 5))]
-
-# Добавленные переменные для таймера
-start_time = pygame.time.get_ticks()
-game_duration = 3 * 60 * 1000  # 3 minutes
-
-# Переменные для главного меню
-show_menu = False
-show_game_menu = False
-menu_font = pygame.font.Font(None, 50)
-menu_options = ["Start", "Options", "Exit"]
-game_menu_options = ["Resume", "New Game", "Options", "Main Menu", "Exit"]
-resolution_options = ["800x600", "720x480", "640x480", "1280x800", "1280x720", "1024x768", "1920x1080"] 
-selected_resolution = 0  # Индекс выбранного разрешения
-selected_option = 0  # Индекс выбранной опции в меню
-ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
-volume = 0.5
-
-#Главное меню
 def main_menu():
     global selected_option
     global show_menu
 
     while True:
-        screen.fill((0, 0, 0))
+        screen.fill(Colores[0])
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -99,16 +46,17 @@ def main_menu():
 
 
         for i, option in enumerate(menu_options):
-            color = YELLOW if i == selected_option else (200, 200, 200)
+            color = Colores[4] if i == selected_option else (Colores[9])
             text = menu_font.render(option, True, color)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(menu_options) * 25 + i * 50))
 
         pygame.display.flip()
 
-#Перезагрузка при New Game
+#Restarting game for New Game button | Перезагрузка при New Game
 def reset_game():
     global ball
     global ball_speed
+    global initial_ball_speed
     global player1_pos
     global player2_pos
     global player1_speed
@@ -118,50 +66,53 @@ def reset_game():
     global obstacles
     global start_time
 
-    # Reset the ball
+    # Reset the ball | Возврат мяча в начальное положение
     ball.x = WIDTH // 2 - ball_size // 2
     ball.y = HEIGHT // 2 - ball_size // 2
+    ballx = random.randint(-5, 5)
+    bally = random.randint(-5, 5)
+    initial_ball_speed = pygame.Vector2(ballx, bally)
     ball_speed = initial_ball_speed.copy()
 
-    # Reset player positions and speeds
-    player1_pos = pygame.Vector2(WIDTH - 30, HEIGHT // 2)
-    player2_pos = pygame.Vector2(30, HEIGHT // 2)
+    # Reset player positions and speeds | Возврат игроков в начальное положение
+    player1_pos = pygame.Vector2(WIDTH - 260, HEIGHT // 2)
+    player2_pos = pygame.Vector2(260, HEIGHT // 2)
     player1_speed = pygame.Vector2(0, 0)
     player2_speed = pygame.Vector2(0, 0)
 
-    # Reset scores
+    # Reset scores | Сброс счета
     score_left = 0
     score_right = 0
 
-    # Regenerate obstacles
+    # Regenerate obstacles | Регенерация преград
     obstacles = [pygame.Rect(random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30), random.randint(0, HEIGHT - 30), 30, 30)
                  for _ in range(random.randint(0, 5))]
 
-    # Reset the game timer
+    # Reset the game timer | Перезапуск таймера
     start_time = pygame.time.get_ticks()
 
 
-#Функция главного меню
+#Main menu function | Функция главного меню
 def return_to_main_menu():
     global show_game_menu
     global selected_option
 
-    # Reset game variables if needed
+    # Reset game variables if needed | Рестарт если нужно
     reset_game()
 
-    # Exit the game menu loop
+    # Exit the game menu loop | Конец цикла меню
     show_game_menu = False
 
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-# Меню во время игры(ESC)
+#Menu during the game(ESC) | Меню во время игры(ESC)
 def game_menu():
     global show_game_menu
     global selected_option
     global show_menu
 
     while show_game_menu:
-        screen.fill((0, 0, 0))
+        screen.fill(Colores[0])
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -172,6 +123,8 @@ def game_menu():
                     selected_option = (selected_option - 1) % len(game_menu_options)
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(game_menu_options)
+                elif event.key == pygame.K_ESCAPE:
+                    show_game_menu = False
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:  # Resume
                         show_game_menu = False
@@ -188,21 +141,16 @@ def game_menu():
                         sys.exit()
 
         for i, option in enumerate(game_menu_options):
-            color = YELLOW if i == selected_option else (200, 200, 200)
+            color = Colores[4] if i == selected_option else (Colores[9])
             text = menu_font.render(option, True, color)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - len(game_menu_options) * 25 + i * 50))
 
         pygame.display.flip()
 
-#звуковой слайдер(отключено)
-def create_volume_slider():
-    volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
-    volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, 0.5, (0.0, 1.0), manager=ui_manager)
-    return volume_slider
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Option menu | меню опций
 
-volume_slider = create_volume_slider()
 
-#меню опций
 def options_menu():
     global selected_option
     global show_menu
@@ -213,15 +161,15 @@ def options_menu():
     fullscreen_toggle = False
     volume_toggle = False
 
-    # Pygame GUI initialization
+    # Pygame GUI initialization | Инииализация Pygame GUI
     ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT))
 
-    # Create volume slider
-                    #volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
-                    #volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, volume, (0.0, 1.0), manager=ui_manager)
+                                    # Create volume slider
+                                                    #volume_slider_rect = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50), (200, 20))
+                                                    #volume_slider = pygame_gui.elements.UIHorizontalSlider(volume_slider_rect, volume, (0.0, 1.0), manager=ui_manager)
 
     while True:
-        screen.fill((0, 0, 0))
+        screen.fill(Colores[0])
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -242,11 +190,11 @@ def options_menu():
                         elif selected_option == 1:  # Toggle Fullscreen
                             fullscreen_toggle = not fullscreen_toggle
                             if fullscreen_toggle:
-                                # Переключение в полноэкранный режим
+                                # Switch to full screen mode | Переключение в полноэкранный режим
                                 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
                             else:
-                                # Переключение в оконный режим с новыми размерами окна
-                                windowed_width, windowed_height = 1000, 800  # Новые размеры окна
+                                # Switch to screen mode with new window size | Переключение в оконный режим с новыми размерами окна
+                                windowed_width, windowed_height = 1000, 800  # New window size | Новые размеры окна
                                 screen = pygame.display.set_mode((windowed_width, windowed_height))
                             pygame.display.set_caption("2D Football Game")
                         elif selected_option == 2:  # Set Volume
@@ -255,25 +203,25 @@ def options_menu():
                             if volume_toggle:
                                 volume = 0
                             else:
-                                volume = 0.5
+                                volume = 0.7
                             return
                     elif event.key == pygame.K_m:
                         volume_toggle = not volume_toggle
                         if volume_toggle:
                             volume = 0
                         else:
-                            volume = 0.5
+                            volume = 0.7
                     elif event.key == pygame.K_f:
                         fullscreen_toggle = not fullscreen_toggle
                         if fullscreen_toggle:
-                            # Переключение в полноэкранный режим
+                            # Switch to full screen mode | Переключение в полноэкранный режим
                             screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
                         else:
-                            # Переключение в оконный режим с новыми размерами окна
-                            windowed_width, windowed_height = 900, 700  # Новые размеры окна
+                             # Switch to screen mode with new window size | Переключение в оконный режим с новыми размерами окна
+                            windowed_width, windowed_height = 900, 700  # New window size | Новые размеры окна
                             screen = pygame.display.set_mode((windowed_width, windowed_height))
                             
-                             # Масштабирование игровых объектов и преград
+                             # Scaling of game objects and obstacles | Масштабирование игровых объектов и преград
                             ball.x = windowed_width // 2 - ball_size // 2
                             ball.y = windowed_height // 2 - ball_size // 2
 
@@ -287,11 +235,11 @@ def options_menu():
                         pygame.display.set_caption("2D Football Game")
 
             elif event.type == pygame.VIDEORESIZE:
-                # Получение новых размеров окна
+                #Geting new screen size | Получение новых размеров окна
                 WIDTH, HEIGHT = event.size
                 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
                 
-                # Масштабирование игровых объектов и преград
+                #Scaling of game objects and obstacles | Масштабирование игровых объектов и преград
                 ball.x = WIDTH // 2 - ball_size // 2
                 ball.y = HEIGHT // 2 - ball_size // 2
 
@@ -302,67 +250,71 @@ def options_menu():
                     obstacle.x = random.randint(WIDTH // 3, 2 * WIDTH // 3 - 30)
                     obstacle.y = random.randint(0, HEIGHT - 30)
 
-                # Обновляем положение ворот внутри экрана
+                #Update the position of the gates inside the screen | Обновляем положение ворот внутри экрана
                 goal_left = max(10, WIDTH // 3)
                 goal_right = min(2 * WIDTH // 3 - 30, WIDTH - 20)
 
-                pygame.draw.line(screen, RED, (goal_right, 0), (goal_right, HEIGHT), 2)
+                pygame.draw.line(screen, Colores[2], (goal_right, 0), (goal_right, HEIGHT), 2)
 
-                # Update the UI manager with the current event
+                # Update the UI manager with the current event | Обновленик UI менеджера для текущего события
                 ui_manager.process_events(event)
 
-        # Update the UI manager
+        # Update the UI manager | Обновленик UI менеджера
         ui_manager.update(pygame.time.get_ticks() / 1000.0)
 
-        # Draw GUI elements
+        # Draw GUI elements | Рисовка элементов
         ui_manager.draw_ui(screen)
 
         pygame.mixer.music.set_volume(volume)
 
         font = pygame.font.Font(None, 36)
 
-        # Render and display the fullscreen toggle switch
-        toggle_text = font.render("Fullscreen", True, (255, 255, 255))
-        toggle_text1 = font.render("Volume", True, (255, 255, 255))
+        # Render and display the fullscreen toggle switch | Рендер и дисплей фулскрин свитчера
+        toggle_text = font.render("Fullscreen", True, (Colores[1]))
+        toggle_text1 = font.render("Music Mute", True, (Colores[1]))
         toggle_rect = toggle_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 35))
         toggle_rect1 = toggle_text1.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 35))
-        pygame.draw.rect(screen, (255, 255, 255), toggle_rect, 2)
-        pygame.draw.rect(screen, (255, 255, 255), toggle_rect1, 2)
+        pygame.draw.rect(screen, (Colores[1]), toggle_rect, 2)
+        pygame.draw.rect(screen, (Colores[1]), toggle_rect1, 2)
 
         if fullscreen_toggle:
-            pygame.draw.rect(screen, (0, 255, 0), (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+            pygame.draw.rect(screen, (Colores[5]), (toggle_rect.centerx, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
         else:
-            pygame.draw.rect(screen, (255, 0, 0), (toggle_rect.left, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
+            pygame.draw.rect(screen, (Colores[2]), (toggle_rect.left, toggle_rect.top, toggle_rect.width // 2, toggle_rect.height), 0)
 
         screen.blit(toggle_text, toggle_rect.topleft)
 
         if volume_toggle:
-            pygame.draw.rect(screen, (255, 0, 0), (toggle_rect1.centerx, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
+            pygame.draw.rect(screen, (Colores[5]), (toggle_rect1.centerx, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
         else:
-            pygame.draw.rect(screen, (0, 255, 0), (toggle_rect1.left, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
+            pygame.draw.rect(screen, (Colores[2]), (toggle_rect1.left, toggle_rect1.top, toggle_rect1.width // 2, toggle_rect1.height), 0)
 
         screen.blit(toggle_text1, toggle_rect1.topleft)
-        # Render and display the volume label
-        #volume_label = font.render("-  Music Volume  +", True, (255, 255, 255))
-        #volume_label_rect = volume_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
-        #screen.blit(volume_label, volume_label_rect.topleft)
+                                        # Render and display the volume label
+                                        #volume_label = font.render("-  Music Volume  +", True, (255, 255, 255))
+                                        #volume_label_rect = volume_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
+                                        #screen.blit(volume_label, volume_label_rect.topleft)
 
         pygame.display.flip()
 
-#Оснновной игровой цикл
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Main game loop | Оснновной игровой цикл
+
+
 while True:
     pygame.mixer.music.play(loops=-1)
     main_menu()
     
     pygame.mixer.music.stop()
-    #цикл игры
+    #game loop | цикл игры
     clock = pygame.time.Clock()
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN:      #управление
+            elif event.type == pygame.KEYDOWN:      #control | управление
                 if event.key == pygame.K_ESCAPE:
                   show_game_menu = True
 
@@ -406,42 +358,46 @@ while True:
         player1_pos += player1_speed
         player2_pos += player2_speed
 
-        # Добавленный код для таймера
+        #Added code for timer |  Добавленный код для таймера
         elapsed_time = pygame.time.get_ticks() - start_time
         if elapsed_time >= game_duration:
             running = False
 
-        #система голов
+        #Goal system | система голов
         if ball.left < 0:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_right += 1
             ball_speed = initial_ball_speed.copy()
-            # Воспроизведение звука при забитии гола
+            #Playing sound when scoring a goal | Воспроизведение звука при забитии гола
             play_goal_sound()
+            initial_ball_speed = pygame.Vector2(random.randint(1, 5), random.randint(1, 5))
         elif ball.right > WIDTH:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_left += 1
             ball_speed = initial_ball_speed.copy()
-            # Воспроизведение звука при забитии гола
+            #Playing sound when scoring a goal | Воспроизведение звука при забитии гола
             play_goal_sound()
+            initial_ball_speed = pygame.Vector2(random.randint(1, 5), random.randint(1, 5))
         if ball.left < goal_left:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_right += 1
             ball_speed = initial_ball_speed.copy()
-            # Воспроизведение звука при забитии гола
+            #Playing sound when scoring a goal | Воспроизведение звука при забитии гола
             play_goal_sound()
+            initial_ball_speed = pygame.Vector2(random.randint(1, 5), random.randint(1, 5))
         elif ball.right > goal_right:
             ball.x = WIDTH // 2 - ball_size // 2
             ball.y = HEIGHT // 2 - ball_size // 2
             score_left += 1
             ball_speed = initial_ball_speed.copy()
-            # Воспроизведение звука при забитии гола
+            #Playing sound when scoring a goal | Воспроизведение звука при забитии гола
             play_goal_sound()
+            initial_ball_speed = pygame.Vector2(random.randint(1, 5), random.randint(1, 5))
 
-        # Глухие стены экрана
+        #Blind screen wales | Глухие стены экрана
         if player1_pos.x > WIDTH - player_radius:
             player1_pos.x = WIDTH - player_radius
         elif player1_pos.x < player_radius:
@@ -462,43 +418,49 @@ while True:
         elif player2_pos.y < player_radius:
             player2_pos.y = player_radius
 
-        # Обработка столкновения мяча с игроками
+        #Handing ball collisions with players | Обработка столкновения мяча с игроками
         if pygame.Rect(player1_pos.x - player_radius, player1_pos.y - player_radius, player_radius * 2,
                     player_radius * 2).colliderect(ball):
-            # Изменение направления и скорости мяча в зависимости от столкновения с игроком
+            #Changes the ditection and speed of the ball depending on the collision the player  
+            #Изменение направления и скорости мяча в зависимости от столкновения с игроком
             relative_speed = ball_speed - player1_speed
             relative_direction = pygame.Vector2(player1_pos - ball.center).normalize()
             ball_speed -= 1.75 * relative_speed.dot(relative_direction) * relative_direction
 
+            # playing sound when the player hits the ball
             # Воспроизведение звука при отбитии мяча игроком
             play_hit_sound()
 
         if pygame.Rect(player2_pos.x - player_radius, player2_pos.y - player_radius, player_radius * 2,
                     player_radius * 2).colliderect(ball):
+            #Changes the ditection and speed of the ball depending on the collision the player
             # Изменение направления и скорости мяча в зависимости от столкновения с игроком
             relative_speed = ball_speed - player2_speed
             relative_direction = pygame.Vector2(player2_pos - ball.center).normalize()
             ball_speed -= 1.75 * relative_speed.dot(relative_direction) * relative_direction
 
+            # playing sound when the player hits the ball
             # Воспроизведение звука при отбитии мяча игроком
             play_hit_sound()
 
+        # Handing player collisions with obstacles
         # Обработка столкновения игроков с преградами
         for obstacle in obstacles:
-            # Игрок 1
+            # Pplayer 1 | Игрок 1
             if pygame.Rect(player1_pos.x - player_radius, player1_pos.y - player_radius, player_radius * 2,
                         player_radius * 2).colliderect(obstacle):
                 overlap = player_radius + obstacle.width / 2 - player1_pos.distance_to(obstacle.center)
                 direction = (obstacle.center - player1_pos).normalize()
                 player1_pos -= overlap * direction
 
-            # Игрок 2
+            #Pplayer 1 |  Игрок 2
             if pygame.Rect(player2_pos.x - player_radius, player2_pos.y - player_radius, player_radius * 2,
                         player_radius * 2).colliderect(obstacle):
                 overlap = player_radius + obstacle.width / 2 - player2_pos.distance_to(obstacle.center)
                 direction = (obstacle.center - player2_pos).normalize()
                 player2_pos -= overlap * direction
         
+        #Handing players collisions
         # Обработка столкновения игроков с игроками
         if player1_pos.distance_to(player2_pos) < 2 * player_radius:
             overlap = 2 * player_radius - player1_pos.distance_to(player2_pos)
@@ -509,6 +471,7 @@ while True:
         ball.x += ball_speed.x
         ball.y += ball_speed.y
 
+        # Bouncing ball with wall
         # Отскок мяча от стен
         if ball.left <= 0 or ball.right >= WIDTH:
             ball_speed.x = -ball_speed.x
@@ -518,7 +481,7 @@ while True:
             ball_speed.y = -ball_speed.y
             play_bounce_sound()
 
-        # Обработка столкновения мяча с преградами
+        # Handing ball collisions with obstacles | Обработка столкновения мяча с преградами
         for obstacle in obstacles:
             if obstacle.colliderect(ball):
                 intersection = ball.clip(obstacle)
@@ -531,42 +494,43 @@ while True:
                     ball.x += 2 * (intersection.width * (ball_speed.x > 0) - intersection.width * (ball_speed.x < 0))
                 play_bounce_sound()
 
-        #отрисовка графики
-        screen.fill((0, 0, 0))
+        #Graphic draw | отрисовка графики
+        screen.fill(Colores[0])
 
-        pygame.draw.ellipse(screen, YELLOW, ball)
-        pygame.draw.circle(screen, RED, (int(player1_pos.x), int(player1_pos.y)), player_radius)
-        pygame.draw.circle(screen, BLUE, (int(player2_pos.x), int(player2_pos.y)), player_radius)
-        pygame.draw.line(screen, BLUE, (goal_left, 0), (goal_left, HEIGHT), 2)
-        pygame.draw.line(screen, RED, (goal_right, 0), (goal_right, HEIGHT), 2)
+        pygame.draw.ellipse(screen, Colores[4], ball)
+        pygame.draw.circle(screen, Colores[7], (int(player1_pos.x), int(player1_pos.y)), player_radius)
+        pygame.draw.circle(screen, Colores[3], (int(player2_pos.x), int(player2_pos.y)), player_radius)
+        pygame.draw.line(screen, Colores[3], (goal_left, 0), (goal_left, HEIGHT), 2)
+        pygame.draw.line(screen, Colores[2], (goal_right, 0), (goal_right, HEIGHT), 2)
 
-        # Отрисовка преград
+        # Drawing obstacle | Отрисовка преград
         for obstacle in obstacles:
-            pygame.draw.rect(screen, VIOLET, obstacle)
+            pygame.draw.rect(screen, Colores[6], obstacle)
 
         font = pygame.font.Font(None, 36)
         # Добавленный код для отображения таймера
+        # Show time
 
         if show_menu:
-        # Если флаг отображения меню установлен, вызываем главное меню
+        # If the menu display flag is set, call the main menu | Если флаг отображения меню установлен, вызываем главное меню
             main_menu()
-            # После возврата из меню, снова устанавливаем флаг в False
+            #After returning from the menu, set the flag to False again |  После возврата из меню, снова устанавливаем флаг в False
             show_menu = False
 
         remaining_minutes = (game_duration - elapsed_time) // 1000 // 60
         remaining_seconds = (game_duration - elapsed_time) // 1000 % 60
-        timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, GREEN)
-        # Рисуем таймер слева от счета
+        timer_display = font.render(f"{remaining_minutes}:{remaining_seconds:02}", True, Colores[8])
+        #Draw a timer to the left of the score | Рисуем таймер слева от счета
         screen.blit(timer_display, (WIDTH // 2.2 - timer_display.get_width() // 2, 20))
-        # Рисуем счет
-        score_display = font.render(f"           | {score_left}  -  {score_right} | ", True, WHITE)
+        #Drowing ther score | Рисуем счет
+        score_display = font.render(f"           | {score_left}  -  {score_right} | ", True, Colores[8])
         screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
 
         pygame.display.flip()
 
         clock.tick(FPS)
 
-    # По окончании таймера выводим сообщение о победителе
+    #At the end of the timer, we display a messege about the winner | По окончании таймера выводим сообщение о победителе
     if score_left < score_right:
         winner_message = "Red Won!"
     elif score_left > score_right:
@@ -574,13 +538,14 @@ while True:
     else:
         winner_message = "It's a Tie!"
 
-    # Отображаем сообщение о победителе на чёрном фоне
-    screen.fill((0, 0, 0))
-    winner_display = font.render(winner_message, True, WHITE)
+    #Display the winner message of a black background | Отображаем сообщение о победителе на чёрном фоне
+    screen.fill(Colores[0])
+    winner_display = font.render(winner_message, True, Colores[1])
     screen.blit(winner_display, (WIDTH // 2 - winner_display.get_width() // 2, HEIGHT // 2 - winner_display.get_height() // 2))
     pygame.display.flip()
 
-    # Ждем некоторое время перед завершением программы
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #Wait some timebefor ending the program | Ждем некоторое время перед завершением программы
     pygame.time.wait(1000)
 
     pygame.quit()
